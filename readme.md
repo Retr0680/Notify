@@ -12,6 +12,7 @@ Notify is a centralized, dark-mode personal "Life OS" dashboard designed to repl
 
 ## Core Directory Structure
 
+```text
 src/
 ├── assets/             # Core resets and dark-mode stylesheets
 ├── components/         # Global navigation and layout shells
@@ -24,6 +25,7 @@ src/
 │   └── work/           # Production monitoring (Timer, Inventories, Logs)
 ├── App.jsx             # State boundaries and system routers
 └── main.jsx            # Application mount initialization
+```
 
 ## Database Schema Configuration
 
