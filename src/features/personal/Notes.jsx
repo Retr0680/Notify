@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { StickyNote, Plus, X, Check } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Notes() {
@@ -17,7 +18,7 @@ export default function Notes() {
       .from('notes')
       .select('*')
       .order('updated_at', { ascending: false })
-    
+
     if (!error && data) {
       setNotes(data)
     }
@@ -66,13 +67,13 @@ export default function Notes() {
     } else {
       console.error("Error saving note:", error)
     }
-    
+
     setLoading(false)
   }
 
   const handleDelete = async (id) => {
     if (!window.confirm('Delete this note?')) return
-    
+
     const { error } = await supabase.from('notes').delete().eq('id', id)
     if (!error) {
       fetchNotes()
@@ -81,72 +82,61 @@ export default function Notes() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', height: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Notes</h2>
+    <div className="card" style={{ height: '100%' }}>
+      <div className="card-header">
+        <h2 className="card-title"><StickyNote />Notes</h2>
         {!editingNote && (
-          <button onClick={handleCreateNew} style={{ padding: '6px 12px', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}>
-            + New
+          <button onClick={handleCreateNew} className="btn btn-secondary btn-sm">
+            <Plus size={14} />
+            New
           </button>
         )}
       </div>
 
       {editingNote ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+        <div className="form-stack" style={{ marginBottom: 0 }}>
           <input
             type="text"
-            placeholder="Note Title"
+            placeholder="Note title"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            style={{ padding: '10px', fontSize: '16px', fontWeight: 'bold' }}
+            className="input"
+            style={{ fontWeight: 600 }}
           />
           <textarea
             placeholder="Jot something down..."
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            style={{ padding: '10px', minHeight: '150px', resize: 'vertical' }}
+            className="textarea"
           />
           <div style={{ display: 'flex', gap: '10px', justifyContent: 'flex-end' }}>
-            <button onClick={() => setEditingNote(null)} style={{ padding: '8px 16px' }}>Cancel</button>
-            <button onClick={handleSave} disabled={loading} style={{ padding: '8px 16px', background: 'green', color: 'white', border: 'none' }}>
-              {loading ? 'Saving...' : 'Save'}
+            <button onClick={() => setEditingNote(null)} className="btn btn-ghost btn-sm">
+              <X size={14} />
+              Cancel
+            </button>
+            <button onClick={handleSave} disabled={loading} className="btn btn-success btn-sm">
+              {loading ? <span className="spinner" /> : <Check size={14} />}
+              Save
             </button>
           </div>
         </div>
       ) : (
-        <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+        <div className="list">
           {notes.map((note) => (
-            <li 
-              key={note.id} 
-              style={{ 
-                padding: '12px', 
-                borderBottom: '1px solid #eee',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                cursor: 'pointer'
-              }}
-            >
-              <div onClick={() => handleEdit(note)} style={{ flex: 1 }}>
-                <strong style={{ display: 'block', marginBottom: '4px' }}>{note.title}</strong>
-                <span style={{ fontSize: '12px', color: '#666' }}>
-                  {new Date(note.updated_at).toLocaleDateString()}
-                </span>
+            <div key={note.id} className="list-item">
+              <div className="list-item-body" onClick={() => handleEdit(note)} style={{ cursor: 'pointer' }}>
+                <div className="list-item-title">{note.title}</div>
+                <div className="list-item-meta">{new Date(note.updated_at).toLocaleDateString()}</div>
               </div>
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }}
-                style={{ padding: '4px 8px', background: '#ffdddd', color: 'red', border: 'none', borderRadius: '4px' }}
-              >
-                x
+              <button onClick={(e) => { e.stopPropagation(); handleDelete(note.id); }} className="icon-btn">
+                <X />
               </button>
-            </li>
+            </div>
           ))}
           {notes.length === 0 && (
-            <li style={{ color: '#666', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
-              No notes yet.
-            </li>
+            <div className="empty-state">No notes yet.</div>
           )}
-        </ul>
+        </div>
       )}
     </div>
   )

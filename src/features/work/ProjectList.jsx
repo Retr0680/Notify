@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { FolderKanban, Plus, CalendarDays, RotateCcw, CheckCircle2 } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function ProjectList() {
@@ -16,7 +17,7 @@ export default function ProjectList() {
       .from('projects')
       .select('*')
       .order('created_at', { ascending: false })
-    
+
     if (!error && data) {
       setProjects(data)
     }
@@ -31,26 +32,26 @@ export default function ProjectList() {
     const { error } = await supabase
       .from('projects')
       .insert([
-        { 
-          name: newProjectName, 
-          deadline: newProjectDeadline || null 
+        {
+          name: newProjectName,
+          deadline: newProjectDeadline || null
         }
       ])
 
     if (!error) {
       setNewProjectName('')
       setNewProjectDeadline('')
-      fetchProjects() // Refresh the list
+      fetchProjects()
     } else {
       console.error("Error adding project:", error)
     }
-    
+
     setLoading(false)
   }
 
   const handleToggleStatus = async (id, currentStatus) => {
     const newStatus = currentStatus === 'active' ? 'completed' : 'active'
-    
+
     const { error } = await supabase
       .from('projects')
       .update({ status: newStatus })
@@ -62,62 +63,54 @@ export default function ProjectList() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-      <h2>Projects & Deadlines</h2>
-      
-      <form onSubmit={handleAddProject} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+    <div className="card">
+      <h2 className="card-title" style={{ marginBottom: '20px' }}><FolderKanban />Projects & Deadlines</h2>
+
+      <form onSubmit={handleAddProject} className="inline-form">
         <input
           type="text"
-          placeholder="Project Name"
+          placeholder="Project name"
           value={newProjectName}
           onChange={(e) => setNewProjectName(e.target.value)}
-          style={{ padding: '8px', flex: 1 }}
+          className="input"
         />
         <input
           type="date"
           value={newProjectDeadline}
           onChange={(e) => setNewProjectDeadline(e.target.value)}
-          style={{ padding: '8px' }}
+          className="input"
+          style={{ width: 'auto' }}
         />
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px' }}>
-          {loading ? 'Adding...' : 'Add'}
+        <button type="submit" disabled={loading} className="btn btn-primary">
+          {loading ? <span className="spinner" /> : <Plus size={16} />}
+          Add
         </button>
       </form>
 
-      <ul style={{ listStyle: 'none', padding: 0 }}>
+      <div className="list">
         {projects.map((project) => (
-          <li 
-            key={project.id} 
-            style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              padding: '10px',
-              borderBottom: '1px solid #eee',
-              opacity: project.status === 'completed' ? 0.5 : 1
-            }}
-          >
-            <div>
-              <strong style={{ textDecoration: project.status === 'completed' ? 'line-through' : 'none' }}>
-                {project.name}
-              </strong>
+          <div key={project.id} className={`list-item${project.status === 'completed' ? ' is-done' : ''}`}>
+            <div className="list-item-body">
+              <div className="list-item-title">{project.name}</div>
               {project.deadline && (
-                <div style={{ fontSize: '12px', color: '#666' }}>
-                  Deadline: {new Date(project.deadline).toLocaleDateString()}
+                <div className="list-item-meta">
+                  <CalendarDays size={12} />
+                  Deadline {new Date(project.deadline).toLocaleDateString()}
                 </div>
               )}
             </div>
-            
-            <button onClick={() => handleToggleStatus(project.id, project.status)}>
-              Mark {project.status === 'active' ? 'Complete' : 'Active'}
+
+            <button onClick={() => handleToggleStatus(project.id, project.status)} className="btn btn-secondary btn-sm">
+              {project.status === 'active' ? <CheckCircle2 size={14} /> : <RotateCcw size={14} />}
+              {project.status === 'active' ? 'Complete' : 'Reactivate'}
             </button>
-          </li>
+          </div>
         ))}
-        
+
         {projects.length === 0 && (
-          <li style={{ color: '#666', fontStyle: 'italic' }}>No projects yet. Add one above!</li>
+          <div className="empty-state">No projects yet. Add one above!</div>
         )}
-      </ul>
+      </div>
     </div>
   )
 }

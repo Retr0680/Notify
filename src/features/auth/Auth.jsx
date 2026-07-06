@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Zap, Mail, Lock } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Auth({ onSession }) {
@@ -28,42 +29,59 @@ export default function Auth({ onSession }) {
   }
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', backgroundColor: '#0f172a' }}>
-      <div style={{ width: '100%', maxWidth: '400px', padding: '40px', border: '1px solid #334155', borderRadius: '16px', backgroundColor: '#1e293b' }}>
-        <h2 style={{ color: '#f8fafc', marginBottom: '30px', fontSize: '24px', textAlign: 'center' }}>
-          <span style={{ color: '#3b82f6' }}>Noti</span>fy - {isSignUp ? 'Sign Up' : 'Login'}
-        </h2>
-        
-        <form onSubmit={handleAuth} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-          <input
-            type="email"
-            placeholder="Email Address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#f8fafc', fontSize: '15px' }}
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            style={{ padding: '12px 16px', borderRadius: '8px', border: '1px solid #334155', backgroundColor: '#0f172a', color: '#f8fafc', fontSize: '15px' }}
-          />
-          <button type="submit" disabled={loading} style={{ padding: '14px', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '8px', fontWeight: '600', fontSize: '16px', cursor: 'pointer', marginTop: '10px' }}>
-            {loading ? 'Processing...' : isSignUp ? 'Create Account' : 'Sign In'}
+    <div className="auth-shell">
+      <div className="auth-card">
+        <div className="auth-logo">
+          <div className="auth-logo-mark"><Zap size={24} fill="currentColor" /></div>
+          <div>
+            <div className="auth-title">{isSignUp ? 'Create your account' : 'Welcome back'}</div>
+            <div className="auth-subtitle">
+              {isSignUp ? 'Set up Notify to start tracking your life' : 'Sign in to your Command Center'}
+            </div>
+          </div>
+        </div>
+
+        <form onSubmit={handleAuth} className="form-stack" style={{ marginBottom: 0 }}>
+          <div className="field">
+            <label className="field-label">Email address</label>
+            <div style={{ position: 'relative' }}>
+              <Mail size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="email"
+                placeholder="you@example.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="input"
+                style={{ paddingLeft: 38 }}
+              />
+            </div>
+          </div>
+
+          <div className="field">
+            <label className="field-label">Password</label>
+            <div style={{ position: 'relative' }}>
+              <Lock size={16} style={{ position: 'absolute', left: 14, top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }} />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                className="input"
+                style={{ paddingLeft: 38 }}
+              />
+            </div>
+          </div>
+
+          <button type="submit" disabled={loading} className="btn btn-primary btn-block" style={{ marginTop: 8, padding: '12px' }}>
+            {loading ? <span className="spinner" /> : (isSignUp ? 'Create Account' : 'Sign In')}
           </button>
         </form>
-        
-        {message && <div style={{ marginTop: '20px', fontSize: '14px', color: '#3b82f6', textAlign: 'center' }}>{message}</div>}
-        
-        <div style={{ textAlign: 'center', marginTop: '25px' }}>
-          <button 
-            onClick={() => setIsSignUp(!isSignUp)} 
-            style={{ background: 'transparent', border: 'none', color: '#94a3b8', cursor: 'pointer', fontSize: '14px' }}
-          >
-            {isSignUp ? 'Already have an account? Sign In' : 'Need an account? Sign Up'}
-          </button>
-        </div>
+
+        {message && <div className="auth-message">{message}</div>}
+
+        <button className="auth-toggle" onClick={() => setIsSignUp(!isSignUp)}>
+          {isSignUp ? 'Already have an account? Sign In' : "Need an account? Sign Up"}
+        </button>
       </div>
     </div>
   )

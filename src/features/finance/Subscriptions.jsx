@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { CreditCard, Plus, X, AlertTriangle } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Subscriptions() {
@@ -18,7 +19,7 @@ export default function Subscriptions() {
       .from('subscriptions')
       .select('*')
       .order('next_billing_date', { ascending: true })
-    
+
     if (!error && data) {
       setSubs(data)
     }
@@ -48,7 +49,7 @@ export default function Subscriptions() {
       setNextDate('')
       fetchSubs()
     }
-    
+
     setLoading(false)
   }
 
@@ -74,95 +75,76 @@ export default function Subscriptions() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', height: '100%' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>Subscriptions</h2>
+    <div className="card" style={{ height: '100%' }}>
+      <div className="card-header">
+        <h2 className="card-title"><CreditCard />Subscriptions</h2>
         <div style={{ textAlign: 'right' }}>
-          <div style={{ fontSize: '12px', color: '#666' }}>True Monthly Cost</div>
-          <div style={{ fontSize: '20px', fontWeight: 'bold' }}>${trueMonthlyCost.toFixed(2)}</div>
+          <div className="stat-label" style={{ marginBottom: 2 }}>True Monthly</div>
+          <div style={{ fontSize: '18px', fontWeight: 700 }}>${trueMonthlyCost.toFixed(2)}</div>
         </div>
       </div>
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '20px' }}>
+      <form onSubmit={handleAdd} className="form-stack">
         <input
           type="text"
           placeholder="Service (e.g. Netflix)"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          style={{ padding: '8px' }}
+          className="input"
         />
-        <div style={{ display: 'flex', gap: '10px' }}>
+        <div className="form-row">
           <input
             type="number"
             step="0.01"
             placeholder="Cost"
             value={cost}
             onChange={(e) => setCost(e.target.value)}
-            style={{ padding: '8px', flex: 1 }}
+            className="input"
           />
-          <select value={cycle} onChange={(e) => setCycle(e.target.value)} style={{ padding: '8px' }}>
+          <select value={cycle} onChange={(e) => setCycle(e.target.value)} className="select">
             <option value="monthly">Monthly</option>
             <option value="yearly">Yearly</option>
           </select>
         </div>
-        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-          <label style={{ fontSize: '14px', color: '#666' }}>Next Bill:</label>
-          <input
-            type="date"
-            value={nextDate}
-            onChange={(e) => setNextDate(e.target.value)}
-            style={{ padding: '8px', flex: 1 }}
-          />
-        </div>
-        <button type="submit" disabled={loading} style={{ padding: '8px', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}>
-          {loading ? 'Adding...' : 'Add Subscription'}
+        <input
+          type="date"
+          value={nextDate}
+          onChange={(e) => setNextDate(e.target.value)}
+          className="input"
+        />
+        <button type="submit" disabled={loading} className="btn btn-primary btn-block">
+          {loading ? <span className="spinner" /> : <Plus size={16} />}
+          Add Subscription
         </button>
       </form>
 
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <div className="list">
         {subs.map((sub) => {
           const upcoming = isUpcoming(sub.next_billing_date)
           return (
-            <li 
-              key={sub.id} 
-              style={{ 
-                padding: '12px', 
-                borderBottom: '1px solid #eee',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                background: upcoming ? '#fff3cd' : 'transparent',
-                borderRadius: upcoming ? '4px' : '0'
-              }}
-            >
-              <div>
-                <strong style={{ display: 'block' }}>{sub.name}</strong>
-                <span style={{ fontSize: '12px', color: upcoming ? '#856404' : '#666' }}>
-                  {upcoming ? '⚠️ Due soon: ' : 'Next: '} 
+            <div key={sub.id} className={`list-item${upcoming ? ' highlight' : ''}`}>
+              <div className="list-item-body">
+                <div className="list-item-title">{sub.name}</div>
+                <div className={`list-item-meta${upcoming ? ' warning' : ''}`}>
+                  {upcoming && <AlertTriangle size={12} />}
+                  {upcoming ? 'Due soon: ' : 'Next: '}
                   {new Date(sub.next_billing_date).toLocaleDateString()}
-                </span>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-                <div style={{ textAlign: 'right' }}>
-                  <div style={{ fontWeight: 'bold' }}>${Number(sub.cost).toFixed(2)}</div>
-                  <div style={{ fontSize: '12px', color: '#666' }}>/{sub.billing_cycle === 'monthly' ? 'mo' : 'yr'}</div>
                 </div>
-                <button 
-                  onClick={() => handleDelete(sub.id)}
-                  style={{ padding: '4px 8px', background: 'transparent', color: 'red', border: 'none', cursor: 'pointer' }}
-                >
-                  x
-                </button>
               </div>
-            </li>
+              <div style={{ textAlign: 'right' }}>
+                <div style={{ fontWeight: 700, fontSize: 14.5 }}>${Number(sub.cost).toFixed(2)}</div>
+                <div style={{ fontSize: 12, color: 'var(--text-muted)' }}>/{sub.billing_cycle === 'monthly' ? 'mo' : 'yr'}</div>
+              </div>
+              <button onClick={() => handleDelete(sub.id)} className="icon-btn">
+                <X />
+              </button>
+            </div>
           )
         })}
         {subs.length === 0 && (
-          <li style={{ color: '#666', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
-            No subscriptions tracked.
-          </li>
+          <div className="empty-state">No subscriptions tracked.</div>
         )}
-      </ul>
+      </div>
     </div>
   )
 }

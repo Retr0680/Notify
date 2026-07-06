@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Timer, Play, Square } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function ProjectTimer() {
@@ -67,31 +68,33 @@ export default function ProjectTimer() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-      <h2>Project Timer</h2>
-      
+    <div className="card">
+      <h2 className="card-title" style={{ marginBottom: '20px' }}><Timer />Project Timer</h2>
+
       <select
         value={selectedProject}
         onChange={(e) => setSelectedProject(e.target.value)}
         disabled={isTracking}
-        style={{ padding: '8px', marginBottom: '15px', width: '100%' }}
+        className="select"
       >
-        <option value="">Select a Project</option>
+        <option value="">Select a project</option>
         {projects.map((p) => (
           <option key={p.id} value={p.id}>{p.name}</option>
         ))}
       </select>
 
-      <div style={{ fontSize: '48px', fontFamily: 'monospace', margin: '20px 0' }}>
+      <div className={`timer-display${isTracking ? ' is-active' : ''}`}>
         {formatTime(elapsedSeconds)}
       </div>
 
       {!isTracking ? (
-        <button onClick={handleStart} style={{ padding: '10px 20px', background: 'green', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={handleStart} disabled={!selectedProject} className="btn btn-success btn-block">
+          <Play size={16} fill="currentColor" />
           Start
         </button>
       ) : (
-        <button onClick={handleStop} style={{ padding: '10px 20px', background: 'red', color: 'white', border: 'none', borderRadius: '4px' }}>
+        <button onClick={handleStop} className="btn btn-danger btn-block">
+          <span className="pulse-dot" style={{ background: 'white' }} />
           Stop
         </button>
       )}

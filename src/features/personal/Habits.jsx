@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Flame, Plus, Check } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Habits() {
@@ -7,7 +8,7 @@ export default function Habits() {
   const [newHabitTitle, setNewHabitTitle] = useState('')
   const [loading, setLoading] = useState(false)
 
-  const today = new Date().toLocaleDateString('en-CA') 
+  const today = new Date().toLocaleDateString('en-CA')
 
   useEffect(() => {
     fetchData()
@@ -47,7 +48,7 @@ export default function Habits() {
       setNewHabitTitle('')
       fetchData()
     }
-    
+
     setLoading(false)
   }
 
@@ -74,78 +75,49 @@ export default function Habits() {
   }
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px', marginBottom: '30px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Daily Habits</h2>
-        <span style={{ fontSize: '14px', fontWeight: 'bold', color: '#666' }}>
-          {calculateProgress()}% Done
-        </span>
-      </div>
-      
-      <div style={{ background: '#eee', height: '8px', borderRadius: '4px', marginBottom: '20px', overflow: 'hidden' }}>
-        <div style={{ width: `${calculateProgress()}%`, background: '#333', height: '100%', transition: 'width 0.3s ease' }} />
+    <div className="card">
+      <div className="card-header">
+        <h2 className="card-title"><Flame />Daily Habits</h2>
+        <span className="badge badge-neutral">{calculateProgress()}% done</span>
       </div>
 
-      <form onSubmit={handleAddHabit} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      <div className="progress-track" style={{ marginBottom: '22px' }}>
+        <div className="progress-fill success" style={{ width: `${calculateProgress()}%` }} />
+      </div>
+
+      <form onSubmit={handleAddHabit} className="inline-form">
         <input
           type="text"
           placeholder="New daily habit..."
           value={newHabitTitle}
           onChange={(e) => setNewHabitTitle(e.target.value)}
-          style={{ padding: '8px', flex: 1 }}
+          className="input"
         />
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}>
-          {loading ? '+' : '+'}
+        <button type="submit" disabled={loading} className="btn btn-primary btn-icon">
+          {loading ? <span className="spinner" /> : <Plus size={16} />}
         </button>
       </form>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))', gap: '10px' }}>
+      <div className="habit-grid">
         {habits.map((habit) => {
           const isDone = todayLogs.includes(habit.id)
           return (
             <button
               key={habit.id}
               onClick={() => handleToggleHabit(habit.id)}
-              style={{
-                padding: '15px 10px',
-                border: `2px solid ${isDone ? '#4CAF50' : '#ddd'}`,
-                background: isDone ? '#e8f5e9' : 'transparent',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '8px',
-                transition: 'all 0.2s'
-              }}
+              className={`habit-chip${isDone ? ' done' : ''}`}
             >
-              <div style={{ 
-                width: '24px', 
-                height: '24px', 
-                borderRadius: '50%', 
-                border: `2px solid ${isDone ? '#4CAF50' : '#ccc'}`,
-                background: isDone ? '#4CAF50' : 'transparent',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                color: 'white',
-                fontSize: '14px'
-              }}>
-                {isDone ? '✓' : ''}
+              <div className="habit-chip-dot">
+                {isDone && <Check />}
               </div>
-              <span style={{ fontSize: '14px', fontWeight: isDone ? 'bold' : 'normal', textAlign: 'center' }}>
-                {habit.title}
-              </span>
+              <span className="habit-chip-label">{habit.title}</span>
             </button>
           )
         })}
       </div>
-      
+
       {habits.length === 0 && (
-        <div style={{ color: '#666', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
-          No habits tracked yet.
-        </div>
+        <div className="empty-state">No habits tracked yet.</div>
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { ListChecks, Flame, Briefcase, AlertTriangle, Wallet, Receipt, ArrowRight } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Dashboard() {
@@ -20,12 +21,12 @@ export default function Dashboard() {
         .from('tasks')
         .select('*', { count: 'exact', head: true })
         .eq('is_completed', false)
-      
+
       setTaskCount(pendingTasks || 0)
 
       const { data: habits } = await supabase.from('habits').select('id')
       const { data: logs } = await supabase.from('habit_logs').select('habit_id').eq('completed_date', today)
-      
+
       setHabitStats({
         done: logs ? logs.length : 0,
         total: habits ? habits.length : 0
@@ -70,91 +71,105 @@ export default function Dashboard() {
   }, [today])
 
   if (loading) {
-    return <div style={{ color: '#94a3b8', fontSize: '18px' }}>Initializing Command Center...</div>
+    return (
+      <div className="loading-screen" style={{ minHeight: '50vh' }}>
+        <span className="spinner" />
+        Initializing Command Center...
+      </div>
+    )
   }
 
-  const cardStyle = {
-    backgroundColor: '#1e293b',
-    border: '1px solid #334155',
-    borderRadius: '16px',
-    padding: '30px',
-    display: 'flex',
-    flexDirection: 'column'
-  }
-
-  const labelStyle = {
-    color: '#94a3b8',
-    fontSize: '14px',
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: '0.5px',
-    marginBottom: '8px'
-  }
-
-  const linkStyle = {
-    marginTop: 'auto',
-    alignSelf: 'flex-start',
-    backgroundColor: '#3b82f6',
-    color: '#ffffff',
-    padding: '10px 20px',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '600',
-    transition: 'opacity 0.2s'
-  }
+  const habitPct = habitStats.total > 0 ? Math.round((habitStats.done / habitStats.total) * 100) : 0
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
-      <h1 style={{ color: '#f8fafc', fontSize: '32px', fontWeight: '700', marginBottom: '40px' }}>Command Center</h1>
-      
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '30px' }}>
-        
-        <div style={cardStyle}>
-          <h2 style={{ color: '#f8fafc', fontSize: '20px', marginBottom: '24px' }}>Personal HUD</h2>
-          <div style={{ marginBottom: '20px' }}>
-            <div style={labelStyle}>Pending Tasks</div>
-            <div style={{ fontSize: '28px', color: '#f8fafc', fontWeight: '700' }}>{taskCount}</div>
+    <div>
+      <div className="page-header">
+        <span className="page-eyebrow">Overview</span>
+        <h1 className="page-title">Command Center</h1>
+        <p className="page-subtitle">Here's where things stand across your day.</p>
+      </div>
+
+      <div className="dashboard-grid">
+
+        <div className="card dashboard-card">
+          <div className="dashboard-icon-badge" style={{ background: 'var(--accent-soft)', color: '#a5a6f6' }}>
+            <ListChecks />
           </div>
-          <div style={{ marginBottom: '30px' }}>
-            <div style={labelStyle}>Habits Today</div>
-            <div style={{ fontSize: '28px', color: '#f8fafc', fontWeight: '700' }}>
-              {habitStats.done} <span style={{ color: '#64748b', fontSize: '20px' }}>/ {habitStats.total}</span>
+          <h2 className="card-title" style={{ marginBottom: 22 }}>Personal HUD</h2>
+
+          <div style={{ marginBottom: '18px' }}>
+            <div className="stat-label">Pending Tasks</div>
+            <div className="stat-value">{taskCount}</div>
+          </div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <div className="stat-label">Habits Today</div>
+            <div className="stat-value">
+              {habitStats.done} <span className="stat-unit">/ {habitStats.total}</span>
             </div>
+            {habitStats.total > 0 && (
+              <div className="progress-track" style={{ marginTop: 10 }}>
+                <div className="progress-fill success" style={{ width: `${habitPct}%` }} />
+              </div>
+            )}
           </div>
-          <Link to="/personal" style={linkStyle}>Open Personal Pillar</Link>
+
+          <Link to="/personal" className="btn btn-secondary" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+            Open Personal Pillar <ArrowRight size={15} />
+          </Link>
         </div>
 
-        <div style={cardStyle}>
-          <h2 style={{ color: '#f8fafc', fontSize: '20px', marginBottom: '24px' }}>Work Focus</h2>
+        <div className="card dashboard-card">
+          <div className="dashboard-icon-badge" style={{ background: 'rgba(245, 158, 11, 0.14)', color: '#fbbf24' }}>
+            <Briefcase />
+          </div>
+          <h2 className="card-title" style={{ marginBottom: 22 }}>Work Focus</h2>
+
           {closestProject ? (
-            <div style={{ marginBottom: '30px' }}>
-              <div style={labelStyle}>Next Deadline</div>
-              <div style={{ fontSize: '24px', color: '#f8fafc', fontWeight: '700', marginTop: '4px' }}>{closestProject.name}</div>
-              <div style={{ color: '#ef4444', fontWeight: '600', marginTop: '8px', fontSize: '15px' }}>
+            <div style={{ marginBottom: '24px' }}>
+              <div className="stat-label">Next Deadline</div>
+              <div style={{ fontSize: '21px', color: 'var(--text-primary)', fontWeight: 700, marginTop: '2px' }}>
+                {closestProject.name}
+              </div>
+              <div className="badge badge-danger" style={{ marginTop: '10px' }}>
+                <AlertTriangle size={12} />
                 {new Date(closestProject.deadline).toLocaleDateString()}
               </div>
             </div>
           ) : (
-            <div style={{ marginBottom: '30px', color: '#64748b', fontStyle: 'italic' }}>
+            <div className="empty-state" style={{ textAlign: 'left', padding: '0 0 24px' }}>
               No active project deadlines.
             </div>
           )}
-          <Link to="/work" style={linkStyle}>Open Work Tracker</Link>
+          <Link to="/work" className="btn btn-secondary" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+            Open Work Tracker <ArrowRight size={15} />
+          </Link>
         </div>
 
-        <div style={cardStyle}>
-          <h2 style={{ color: '#f8fafc', fontSize: '20px', marginBottom: '24px' }}>Financial Pulse</h2>
-          <div style={{ marginBottom: '20px' }}>
-            <div style={labelStyle}>Net Balance</div>
-            <div style={{ fontSize: '32px', fontWeight: '700', color: netBalance >= 0 ? '#10b981' : '#ef4444' }}>
+        <div className="card dashboard-card">
+          <div className="dashboard-icon-badge" style={{ background: 'var(--success-soft)', color: '#4ade80' }}>
+            <Wallet />
+          </div>
+          <h2 className="card-title" style={{ marginBottom: 22 }}>Financial Pulse</h2>
+
+          <div style={{ marginBottom: '18px' }}>
+            <div className="stat-label">Net Balance</div>
+            <div className="stat-value" style={{ fontSize: '30px', color: netBalance >= 0 ? '#4ade80' : '#fb7185' }}>
               ${netBalance.toFixed(2)}
             </div>
           </div>
-          <div style={{ marginBottom: '30px' }}>
-            <div style={labelStyle}>Bills Next 7 Days</div>
-            <div style={{ fontSize: '28px', color: '#f8fafc', fontWeight: '700' }}>{upcomingSubsCount}</div>
+
+          <div style={{ marginBottom: '24px' }}>
+            <div className="stat-label">Bills Next 7 Days</div>
+            <div className="stat-value" style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {upcomingSubsCount}
+              {upcomingSubsCount > 0 && <Receipt size={16} color="var(--text-muted)" />}
+            </div>
           </div>
-          <Link to="/finance" style={linkStyle}>Open Finance Ledger</Link>
+
+          <Link to="/finance" className="btn btn-secondary" style={{ marginTop: 'auto', alignSelf: 'flex-start' }}>
+            Open Finance Ledger <ArrowRight size={15} />
+          </Link>
         </div>
 
       </div>

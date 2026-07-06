@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { ListChecks, Plus, CalendarDays } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Tasks() {
@@ -18,7 +19,7 @@ export default function Tasks() {
       .select('*')
       .order('is_completed', { ascending: true })
       .order('created_at', { ascending: false })
-    
+
     if (!error && data) {
       setTasks(data)
     }
@@ -33,9 +34,9 @@ export default function Tasks() {
     const { error } = await supabase
       .from('tasks')
       .insert([
-        { 
-          title: newTaskTitle, 
-          due_date: newTaskDueDate || null 
+        {
+          title: newTaskTitle,
+          due_date: newTaskDueDate || null
         }
       ])
 
@@ -44,7 +45,7 @@ export default function Tasks() {
       setNewTaskDueDate('')
       fetchTasks()
     }
-    
+
     setLoading(false)
   }
 
@@ -70,80 +71,69 @@ export default function Tasks() {
   })
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px' }}>
-        <h2 style={{ margin: 0 }}>Daily Tasks</h2>
-        <select 
-          value={filter} 
+    <div className="card">
+      <div className="card-header">
+        <h2 className="card-title"><ListChecks />Daily Tasks</h2>
+        <select
+          value={filter}
           onChange={(e) => setFilter(e.target.value)}
-          style={{ padding: '5px' }}
+          className="select"
+          style={{ width: 'auto' }}
         >
           <option value="pending">Pending</option>
           <option value="completed">Completed</option>
           <option value="all">All Tasks</option>
         </select>
       </div>
-      
-      <form onSubmit={handleAddTask} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+
+      <form onSubmit={handleAddTask} className="inline-form">
         <input
           type="text"
           placeholder="What needs to be done?"
           value={newTaskTitle}
           onChange={(e) => setNewTaskTitle(e.target.value)}
-          style={{ padding: '8px', flex: 1 }}
+          className="input"
         />
         <input
           type="date"
           value={newTaskDueDate}
           onChange={(e) => setNewTaskDueDate(e.target.value)}
-          style={{ padding: '8px' }}
+          className="input"
+          style={{ width: 'auto' }}
         />
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}>
-          {loading ? 'Adding...' : 'Add'}
+        <button type="submit" disabled={loading} className="btn btn-primary">
+          {loading ? <span className="spinner" /> : <Plus size={16} />}
+          Add
         </button>
       </form>
 
-      <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+      <div className="list">
         {filteredTasks.map((task) => (
-          <li 
-            key={task.id} 
-            style={{ 
-              display: 'flex', 
-              alignItems: 'center',
-              padding: '12px 10px',
-              borderBottom: '1px solid #eee',
-              opacity: task.is_completed ? 0.5 : 1,
-              backgroundColor: task.is_completed ? '#f9f9f9' : 'transparent'
-            }}
-          >
-            <input 
-              type="checkbox" 
+          <div key={task.id} className={`list-item${task.is_completed ? ' is-done' : ''}`}>
+            <input
+              type="checkbox"
               checked={task.is_completed}
               onChange={() => handleToggleComplete(task.id, task.is_completed)}
-              style={{ marginRight: '15px', width: '18px', height: '18px', cursor: 'pointer' }}
+              className="checkbox"
             />
-            <div style={{ flex: 1 }}>
-              <span style={{ 
-                textDecoration: task.is_completed ? 'line-through' : 'none',
-                fontSize: '16px'
-              }}>
-                {task.title}
-              </span>
+            <div className="list-item-body">
+              <div className="list-item-title">{task.title}</div>
               {task.due_date && (
-                <div style={{ fontSize: '12px', color: '#666', marginTop: '4px' }}>
-                  Due: {new Date(task.due_date).toLocaleDateString()}
+                <div className="list-item-meta">
+                  <CalendarDays size={12} />
+                  Due {new Date(task.due_date).toLocaleDateString()}
                 </div>
               )}
             </div>
-          </li>
+          </div>
         ))}
-        
+
         {filteredTasks.length === 0 && (
-          <li style={{ color: '#666', fontStyle: 'italic', textAlign: 'center', padding: '20px' }}>
+          <div className="empty-state">
             {filter === 'pending' ? "You're all caught up!" : "No tasks found."}
-          </li>
+          </div>
         )}
-      </ul>
+      </div>
     </div>
   )
 }

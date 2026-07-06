@@ -26,7 +26,12 @@ function App() {
   }, [])
 
   if (initializing) {
-    return <div style={{ padding: '50px' }}>Syncing global session configurations...</div>
+    return (
+      <div className="loading-screen">
+        <span className="spinner" />
+        Syncing session...
+      </div>
+    )
   }
 
   if (!session) {

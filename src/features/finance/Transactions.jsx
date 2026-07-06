@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Receipt, Plus, X, TrendingUp, TrendingDown, Scale } from 'lucide-react'
 import { supabase } from '../../config/supabase'
 
 export default function Transactions() {
@@ -18,7 +19,7 @@ export default function Transactions() {
       .select('*')
       .order('date', { ascending: false })
       .order('created_at', { ascending: false })
-    
+
     if (!error && data) {
       setTransactions(data)
     }
@@ -45,7 +46,7 @@ export default function Transactions() {
       setAmount('')
       fetchTransactions()
     }
-    
+
     setLoading(false)
   }
 
@@ -58,7 +59,7 @@ export default function Transactions() {
   const totalIncome = transactions
     .filter(t => t.type === 'income')
     .reduce((sum, t) => sum + Number(t.amount), 0)
-    
+
   const totalExpense = transactions
     .filter(t => t.type === 'expense')
     .reduce((sum, t) => sum + Number(t.amount), 0)
@@ -66,31 +67,32 @@ export default function Transactions() {
   const balance = totalIncome - totalExpense
 
   return (
-    <div style={{ border: '1px solid #ccc', padding: '20px', borderRadius: '8px' }}>
-      <h2>Income & Expenses</h2>
-      
-      <div style={{ display: 'flex', gap: '20px', marginBottom: '20px', padding: '15px', background: '#f9f9f9', borderRadius: '8px' }}>
-        <div>
-          <div style={{ fontSize: '14px', color: '#666' }}>Income</div>
-          <div style={{ fontSize: '24px', color: 'green' }}>+${totalIncome.toFixed(2)}</div>
+    <div className="card">
+      <h2 className="card-title" style={{ marginBottom: '20px' }}><Receipt />Income & Expenses</h2>
+
+      <div className="summary-strip">
+        <div className="summary-item">
+          <div className="stat-label"><TrendingUp size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />Income</div>
+          <div className="stat-value income">+${totalIncome.toFixed(2)}</div>
         </div>
-        <div>
-          <div style={{ fontSize: '14px', color: '#666' }}>Expenses</div>
-          <div style={{ fontSize: '24px', color: 'red' }}>-${totalExpense.toFixed(2)}</div>
+        <div className="summary-item">
+          <div className="stat-label"><TrendingDown size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />Expenses</div>
+          <div className="stat-value expense">-${totalExpense.toFixed(2)}</div>
         </div>
-        <div>
-          <div style={{ fontSize: '14px', color: '#666' }}>Net Balance</div>
-          <div style={{ fontSize: '24px', fontWeight: 'bold' }}>${balance.toFixed(2)}</div>
+        <div className="summary-item">
+          <div className="stat-label"><Scale size={12} style={{ verticalAlign: '-2px', marginRight: 4 }} />Net Balance</div>
+          <div className="stat-value">${balance.toFixed(2)}</div>
         </div>
       </div>
 
-      <form onSubmit={handleAdd} style={{ display: 'flex', gap: '10px', marginBottom: '20px' }}>
+      <form onSubmit={handleAdd} className="inline-form">
         <input
           type="text"
           placeholder="Description"
           value={description}
           onChange={(e) => setDescription(e.target.value)}
-          style={{ padding: '8px', flex: 2 }}
+          className="input"
+          style={{ flex: 2 }}
         />
         <input
           type="number"
@@ -98,50 +100,53 @@ export default function Transactions() {
           placeholder="Amount"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
-          style={{ padding: '8px', flex: 1 }}
+          className="input"
         />
-        <select value={type} onChange={(e) => setType(e.target.value)} style={{ padding: '8px' }}>
+        <select value={type} onChange={(e) => setType(e.target.value)} className="select" style={{ width: 'auto' }}>
           <option value="expense">Expense</option>
           <option value="income">Income</option>
         </select>
-        <button type="submit" disabled={loading} style={{ padding: '8px 16px', background: '#333', color: 'white', border: 'none', borderRadius: '4px' }}>
-          {loading ? 'Adding...' : 'Add'}
+        <button type="submit" disabled={loading} className="btn btn-primary">
+          {loading ? <span className="spinner" /> : <Plus size={16} />}
+          Add
         </button>
       </form>
 
-      <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '2px solid #eee' }}>
-            <th style={{ padding: '10px' }}>Date</th>
-            <th style={{ padding: '10px' }}>Description</th>
-            <th style={{ padding: '10px', textAlign: 'right' }}>Amount</th>
-            <th style={{ padding: '10px', textAlign: 'center' }}>Action</th>
-          </tr>
-        </thead>
-        <tbody>
-          {transactions.map((t) => (
-            <tr key={t.id} style={{ borderBottom: '1px solid #eee' }}>
-              <td style={{ padding: '10px' }}>{new Date(t.date).toLocaleDateString()}</td>
-              <td style={{ padding: '10px' }}>{t.description}</td>
-              <td style={{ padding: '10px', textAlign: 'right', color: t.type === 'income' ? 'green' : 'red' }}>
-                {t.type === 'income' ? '+' : '-'}${Number(t.amount).toFixed(2)}
-              </td>
-              <td style={{ padding: '10px', textAlign: 'center' }}>
-                <button onClick={() => handleDelete(t.id)} style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer' }}>
-                  x
-                </button>
-              </td>
-            </tr>
-          ))}
-          {transactions.length === 0 && (
+      <div className="table-wrap">
+        <table className="table">
+          <thead>
             <tr>
-              <td colSpan="4" style={{ padding: '20px', textAlign: 'center', color: '#666', fontStyle: 'italic' }}>
-                No transactions recorded.
-              </td>
+              <th>Date</th>
+              <th>Description</th>
+              <th style={{ textAlign: 'right' }}>Amount</th>
+              <th style={{ textAlign: 'center' }}>Action</th>
             </tr>
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {transactions.map((t) => (
+              <tr key={t.id}>
+                <td>{new Date(t.date).toLocaleDateString()}</td>
+                <td>{t.description}</td>
+                <td style={{ textAlign: 'right', color: t.type === 'income' ? '#4ade80' : '#fb7185', fontWeight: 600 }}>
+                  {t.type === 'income' ? '+' : '-'}${Number(t.amount).toFixed(2)}
+                </td>
+                <td style={{ textAlign: 'center' }}>
+                  <button onClick={() => handleDelete(t.id)} className="icon-btn">
+                    <X />
+                  </button>
+                </td>
+              </tr>
+            ))}
+            {transactions.length === 0 && (
+              <tr>
+                <td colSpan="4">
+                  <div className="empty-state">No transactions recorded.</div>
+                </td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
